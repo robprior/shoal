@@ -8,67 +8,34 @@ import logging
 import pika
 import socket
 import uuid
+import memcache
 from time import time, sleep
 from threading import Thread
 
 from shoal_server import config
 from shoal_server import utilities
 
-"""
-    Basic class to store and update information about each squid server.
-"""
-class SquidNode(object):
-
-    def __init__(self, key, hostname, squid_port, public_ip, private_ip, external_ip, load, geo_data, last_active=time()):
-        self.key = key
-        self.created = time()
-        self.last_active = last_active
-        self.hostname = hostname
-        self.squid_port = squid_port
-        self.public_ip = public_ip
-        self.private_ip = private_ip
-        self.external_ip = external_ip
-        self.geo_data = geo_data
-        self.load = load
-
-    def update(self, load):
-        self.last_active = time()
-        self.load = load
-
-    def jsonify(self):
-        return dict({
-                  "created": self.created,
-                  "last_active": self.last_active,
-                  "hostname": self.hostname,
-                  "squid_port": self.squid_port,
-                  "public_ip": self.public_ip,
-                  "private_ip": self.private_ip,
-                  "external_ip": self.external_ip,
-                  "geo_data": self.geo_data,
-                  "load": self.load,
-                },
-               )
+memc = memcache.Client(['127.0.0.1:11211'], debug=1)
 
 """
     Main application that will monitor RabbitMQ and ShoalUpdate threads.
 """
 class ThreadMonitor(Thread):
 
-    def __init__(self, shoal):
+    def __init__(self):
         # check if geolitecity database needs updating
         if utilities.check_geolitecity_need_update():
             utilities.download_geolitecity()
 
         Thread.__init__(self)
 
-        self.shoal = shoal
         self.threads = []
 
-        rabbitmq_thread = RabbitMQConsumer(self.shoal)
+        rabbitmq_thread = RabbitMQConsumer()
         rabbitmq_thread.daemon = True
         self.threads.append(rabbitmq_thread)
 
-        update_thread = ShoalUpdate(self.shoal)
+        update_thread = ShoalUpdate()
         update_thread.daemon = True
         self.threads.append(update_thread)
 
@@ -103,9 +70,8 @@ class ShoalUpdate(Thread):
     INTERVAL = config.squid_cleanse_interval
     INACTIVE = config.squid_inactive_time
 
-    def __init__(self, shoal):
+    def __init__(self):
         Thread.__init__(self)
-        self.shoal = shoal
         self.running = False
 
     def run(self):
@@ -116,9 +82,9 @@ class ShoalUpdate(Thread):
 
     def update(self):
         curr = time()
-        for squid in self.shoal.values():
-            if curr - squid.last_active > self.INACTIVE:
-                self.shoal.pop(squid.key)
+       # for squid in self.shoal.values():
+       #     if curr - squid.last_active > self.INACTIVE:
+       #         self.shoal.pop(squid.key)
 
     def stop(self):
         self.running = False
@@ -128,9 +94,8 @@ class ShoalUpdate(Thread):
 """
 class WebpyServer(Thread):
 
-    def __init__(self, shoal):
+    def __init__(self):
         Thread.__init__(self)
-        web.shoal = shoal
         web.config.debug = False
         self.app = None
         self.urls = (
@@ -164,10 +129,9 @@ class RabbitMQConsumer(Thread):
     ROUTING_KEY = '#'
     INACTIVE = config.squid_inactive_time
 
-    def __init__(self, shoal):
+    def __init__(self):
         Thread.__init__(self)
         self.host = "{0}/{1}".format(config.amqp_server_url, urllib.quote_plus(config.amqp_virtual_host))
-        self.shoal = shoal
         self._connection = None
         self._channel = None
         self._closing = False
@@ -283,9 +247,6 @@ class RabbitMQConsumer(Thread):
         self._connection.ioloop.start()
 
     def on_message(self, unused_channel, basic_deliver, properties, body):
-        external_ip = public_ip = private_ip = None
-        curr = time()
-
         try:
             data = json.loads(body)
         except ValueError as e:
@@ -294,36 +255,28 @@ class RabbitMQConsumer(Thread):
             return
         try:
             key = data['uuid']
-            hostname = data['hostname']
-            time_sent = data['timestamp']
-            load = data['load']
-            squid_port = data['squid_port']
-        except KeyError as e:
-            logging.error("Message received was not the proper format (missing:{0}), discarding...".format(e))
-            self.acknowledge_message(basic_deliver.delivery_tag)
+        except KeyError:
+            logging.error("message body is missing a unique identifier, discarding...")
             return
-        try:
-            external_ip = data['external_ip']
-        except KeyError:
-            pass
-        try:
-            public_ip = data['public_ip']
-        except KeyError:
-            pass
-        try:
-            private_ip = data['private_ip']
-        except KeyError:
-            pass
-        if key in self.shoal:
-            self.shoal[key].update(load)
-        elif (curr - time_sent < self.INACTIVE) and (public_ip or private_ip):
-            geo_data = utilities.get_geolocation(public_ip)
-            if not geo_data:
-                geo_data = utilities.get_geolocation(external_ip)
-            if not geo_data:
-                logging.error("Unable to generate geo location data, discarding message")
-            else:
-                new_squid = SquidNode(key, hostname, squid_port, public_ip, private_ip, external_ip, load, geo_data, time_sent)
-                self.shoal[key] = new_squid
+
+        shoal_list = memc.get('shoal')
+
+        if key in shoal_list:
+            shoal_list[key]['load'] = load
+            shoal_list[key]['last_active'] = time()
+        else:
+            try:
+                geo_data = utilities.get_geolocation(data['public_ip'])
+            except KeyError as e:
+                try:
+                    geo_data = utilities.get_geolocation(data['external_ip'])
+                except KeyError as f:
+                    logging.error("Could not generate geo location data, discarding...")
+                    return
+            shoal_list[key] = data
+            shoal_list[key]['geo_data'] = geo_data
+            shoal_list[key]['last_active'] = shoal_list[key]['created'] = time()
+
+        memc.set('shoal')
 
         self.acknowledge_message(basic_deliver.delivery_tag)
