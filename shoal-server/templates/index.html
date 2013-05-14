@@ -14,8 +14,6 @@ $def with (now, total, shoal, page, pages, size)
         <tr>
           <th>#</th>
           <th>Hostname</th>
-          <th class="hidden-phone">Public IP</th>
-          <th class="hidden-phone">Private IP</th>
           <th>Bytes Out</th>
           <th>City</th>
           <th>Region</th>
@@ -28,8 +26,8 @@ $def with (now, total, shoal, page, pages, size)
       </thead>
       <tbody>
         $for i,squid in enumerate(shoal):
-            $ last_msg = int(now - squid.last_active)
-            $ alive_time = int(now - squid.created); 
+            $ last_msg = int(now - squid['last_active'])
+            $ alive_time = int(now - squid['created']); 
             $ hour = int(alive_time/60/60)
             $ minute = (alive_time - hour*60*60) / 60
             $ second = alive_time - hour*60*60 - minute*60
@@ -43,15 +41,13 @@ $def with (now, total, shoal, page, pages, size)
     
             <tr class='$state'>
                 <td><span class="badge badge-$state">$((i+1)+(page-1)*size)</td>
-                <td>$squid.hostname</td>
-                <td class="hidden-phone">$squid.public_ip</td>
-                <td class="hidden-phone">$squid.private_ip</td>
-                <td>$squid.load kB/s</td>
-                <td>$squid.geo_data['city']</td>
-                <td>$squid.geo_data['region_name']</td>
-                <td class="hidden-phone">$squid.geo_data['country_name']</td>
-                <td class="hidden-phone">$squid.geo_data['latitude']</td>
-                <td class="hidden-phone">$squid.geo_data['longitude']</td>
+                <td>$squid['hostname']</td>
+                <td>$squid['load'] kB/s</td>
+                <td>$squid['geo_data']['city']</td>
+                <td>$squid['geo_data']['region_name']</td>
+                <td class="hidden-phone">$squid['geo_data']['country_name']</td>
+                <td class="hidden-phone">$squid['geo_data']['latitude']</td>
+                <td class="hidden-phone">$squid['geo_data']['longitude']</td>
                 <td class="hidden-phone">$(last_msg)s</td>
                 <td>$(hour)h$(minute)m$(second)s</td>
             </tr>
@@ -109,4 +105,4 @@ $if pages > 1:
         </ul>
       </div>
     </div>
-  </div>
+</div>

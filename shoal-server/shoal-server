@@ -6,19 +6,17 @@ import logging
 from threading import Thread
 from time import sleep
 from shoal_server import config
-config.setup()
 from shoal_server.shoal import ThreadMonitor, WebpyServer
 
 def main():
-
     shoal_list = {}
     threads = []
 
-    monitor_thread = ThreadMonitor(shoal_list)
+    monitor_thread = ThreadMonitor()
     monitor_thread.daemon = True
     threads.append(monitor_thread)
 
-    webpy_thread = WebpyServer(shoal_list)
+    webpy_thread = WebpyServer()
     webpy_thread.daemon = True
     threads.append(webpy_thread)
 
@@ -37,6 +35,7 @@ def main():
         sys.exit()
 
 if __name__ == '__main__':
+    config.setup()
     shoal_dir = config.shoal_dir
     log_file = config.log_file
     log_format = '%(asctime)s - %(levelname)s - [%(filename)s:%(lineno)s] - %(message)s'
@@ -51,6 +50,6 @@ if __name__ == '__main__':
     try:
         os.chdir(shoal_dir)
     except OSError as e:
-        print "{0} doesn't seem to exist. Please set `shoal_dir` in shoal-server config file to the location of the shoal-server static files.".format(DIRECTORY)
+        print "{0} doesn't seem to exist. Please set `shoal_dir` in shoal-server config file to the location of the shoal-server static files.".format(shoal_dir)
         sys.exit(1)
     main()

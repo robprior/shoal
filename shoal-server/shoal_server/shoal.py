@@ -8,14 +8,11 @@ import logging
 import pika
 import socket
 import uuid
-import memcache
 from time import time, sleep
 from threading import Thread
 
-from shoal_server import config
-from shoal_server import utilities
-
-memc = memcache.Client(['127.0.0.1:11211'], debug=1)
+import config
+import utilities
 
 """
     Main application that will monitor RabbitMQ and ShoalUpdate threads.
@@ -28,7 +25,6 @@ class ThreadMonitor(Thread):
             utilities.download_geolitecity()
 
         Thread.__init__(self)
-
         self.threads = []
 
         rabbitmq_thread = RabbitMQConsumer()
@@ -67,24 +63,27 @@ class ThreadMonitor(Thread):
 """
 class ShoalUpdate(Thread):
 
-    INTERVAL = config.squid_cleanse_interval
-    INACTIVE = config.squid_inactive_time
-
     def __init__(self):
         Thread.__init__(self)
+        self.inactive = config.squid_inactive_time
+        self.interval = config.squid_cleanse_interval
         self.running = False
 
     def run(self):
         self.running = True
+        self.update()
         while self.running:
-            sleep(self.INTERVAL)
+            sleep(self.interval)
             self.update()
 
     def update(self):
         curr = time()
-       # for squid in self.shoal.values():
-       #     if curr - squid.last_active > self.INACTIVE:
-       #         self.shoal.pop(squid.key)
+        shoal_list = utilities.get_shoal()
+        shoal_temp = {}
+        for squid in shoal_list:
+            if curr - shoal_list[squid]['last_active'] < self.inactive:
+                shoal_temp[squid] = shoal_list[squid]
+        utilities.set_shoal(shoal_temp)
 
     def stop(self):
         self.running = False
@@ -124,14 +123,13 @@ class WebpyServer(Thread):
 class RabbitMQConsumer(Thread):
 
     QUEUE = socket.gethostname() + "-" + uuid.uuid1().hex
-    EXCHANGE = config.amqp_exchange
-    EXCHANGE_TYPE = config.amqp_exchange_type
     ROUTING_KEY = '#'
-    INACTIVE = config.squid_inactive_time
 
     def __init__(self):
         Thread.__init__(self)
         self.host = "{0}/{1}".format(config.amqp_server_url, urllib.quote_plus(config.amqp_virtual_host))
+        self.exchange = config.amqp_exchange
+        self.exchange_type = config.amqp_exchange_type
         self._connection = None
         self._channel = None
         self._closing = False
@@ -185,12 +183,12 @@ class RabbitMQConsumer(Thread):
     def on_channel_open(self, channel):
         self._channel = channel
         self.add_on_channel_close_callback()
-        self.setup_exchange(self.EXCHANGE)
+        self.setup_exchange(self.exchange)
 
     def setup_exchange(self, exchange_name):
         self._channel.exchange_declare(self.on_exchange_declareok,
                                        exchange_name,
-                                       self.EXCHANGE_TYPE)
+                                       self.exchange_type)
 
     def on_exchange_declareok(self, unused_frame):
         self.setup_queue(self.QUEUE)
@@ -200,7 +198,7 @@ class RabbitMQConsumer(Thread):
 
     def on_queue_declareok(self, method_frame):
         self._channel.queue_bind(self.on_bindok, self.QUEUE,
-                                 self.EXCHANGE, self.ROUTING_KEY)
+                                 self.exchange, self.ROUTING_KEY)
 
     def add_on_cancel_callback(self):
         self._channel.add_on_cancel_callback(self.on_consumer_cancelled)
@@ -249,20 +247,20 @@ class RabbitMQConsumer(Thread):
     def on_message(self, unused_channel, basic_deliver, properties, body):
         try:
             data = json.loads(body)
+            key = data['uuid']
         except ValueError as e:
             logging.error("Message body could not be decoded. Message: {1}".format(body))
-            self.acknowledge_message(basic_deliver.delivery_tag)
             return
-        try:
-            key = data['uuid']
         except KeyError:
             logging.error("message body is missing a unique identifier, discarding...")
             return
+        finally:
+            self.acknowledge_message(basic_deliver.delivery_tag)
 
-        shoal_list = memc.get('shoal')
+        shoal_list = utilities.get_shoal()
 
         if key in shoal_list:
-            shoal_list[key]['load'] = load
+            shoal_list[key]['load'] = data['load']
             shoal_list[key]['last_active'] = time()
         else:
             try:
@@ -272,11 +270,12 @@ class RabbitMQConsumer(Thread):
                     geo_data = utilities.get_geolocation(data['external_ip'])
                 except KeyError as f:
                     logging.error("Could not generate geo location data, discarding...")
+                    self.acknowledge_message(basic_deliver.delivery_tag)
                     return
             shoal_list[key] = data
             shoal_list[key]['geo_data'] = geo_data
             shoal_list[key]['last_active'] = shoal_list[key]['created'] = time()
 
-        memc.set('shoal')
+        utilities.set_shoal(shoal_list)
 
         self.acknowledge_message(basic_deliver.delivery_tag)

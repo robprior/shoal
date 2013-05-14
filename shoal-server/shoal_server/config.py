@@ -17,6 +17,7 @@ amqp_exchange = 'shoal'
 amqp_exchange_type = 'topic'
 webpy_cache = False
 log_file = '/var/log/shoal_server.log'
+memcache = None
 
 def setup(path=None):
     """Setup shoal using config file.
@@ -34,6 +35,7 @@ def setup(path=None):
     global amqp_exchange_type
     global webpy_cache
     global log_file
+    global memcache
 
     homedir = expanduser('~')
 
@@ -136,3 +138,8 @@ def setup(path=None):
     if config_file.has_option("logging", "log_file"):
         log_file = config_file.get("logging",
                                         "log_file")
+
+    if config_file.has_option("general", "memcache"):
+        memcache = config_file.get("general",
+                                        "memcache")
+

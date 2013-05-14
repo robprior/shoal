@@ -30,9 +30,5 @@ except OSError as e:
     print "{0} doesn't seem to exist. Please set `shoal_dir` in shoal-server config file to the location of the shoal-server static files.".format(DIRECTORY)
     sys.exit(1)
 
-monitor_thread = shoal.ThreadMonitor(shoal_list)
-monitor_thread.daemon = True
-monitor_thread.start()
-
 webpy_app = shoal.WebpyServer(shoal_list)
 application = webpy_app.wsgi()
