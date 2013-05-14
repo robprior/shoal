@@ -42,7 +42,9 @@ def view_index(size):
     for squid in shoal_temp:
         shoal_list.append(shoal_temp[squid])
 
-    total = len(shoal_list)
+    squids = sorted(shoal_list, key=lambda k: (-k['last_active']))
+
+    total = len(squids)
     try:
         size = int(size)
     except (ValueError, TypeError):
@@ -50,7 +52,7 @@ def view_index(size):
     try:
         pages = int(math.ceil(total / float(size)))
     except ZeroDivisionError:
-        return render.index(time(), total, shoal_list, 1, 1, 0)
+        return render.index(time(), total, squids, 1, 1, 0)
 
     if page < 1:
         page = 1
@@ -58,7 +60,7 @@ def view_index(size):
         page = pages
 
     lower, upper = int(size * (page - 1)), int(size * page)
-    return render.index(time(), total, shoal_list[lower:upper], page, pages, size)
+    return render.index(time(), total, squids[lower:upper], page, pages, size)
 
 def view_wpad(**k):
     return render.wpad(utilities.generate_wpad(web.ctx['ip']))
