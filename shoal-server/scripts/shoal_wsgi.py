@@ -1,34 +1,23 @@
-import logging
-import sys
-import os
+"""
+   Use this script with Apache mod_wsgi.
+   If memcache url is defined in config you will need to run the monitor.py script as a background process seperate from this script.
+"""
+import os, sys, logging
+from shoal_server import config, shoal
 
-from shoal_server import config as config
 config.setup()
-
-from shoal_server import shoal as shoal
-from threading import Thread
-from time import sleep
-
-
-DIRECTORY = config.shoal_dir
-LOG_FILE = config.log_file
-LOG_FORMAT = '%(asctime)s - %(levelname)s - [%(filename)s:%(lineno)s] - %(message)s'
-
-threads = []
-shoal_list = {}
-
-try:
-    logging.basicConfig(level=logging.ERROR, format=LOG_FORMAT, filename=LOG_FILE)
-except IOError as e:
-    print "Could not set logger.", e
-    sys.exit(1)
-
 # change working directory so webpy static files load correctly.
 try:
-    os.chdir(DIRECTORY)
+    os.chdir(config.shoal_dir)
 except OSError as e:
-    print "{0} doesn't seem to exist. Please set `shoal_dir` in shoal-server config file to the location of the shoal-server static files.".format(DIRECTORY)
+    print "{0} doesn't seem to exist. Please set `shoal_dir` in shoal-server config file to the location of the shoal-server static files.".format(config.shoal_dir)
     sys.exit(1)
 
-webpy_app = shoal.WebpyServer(shoal_list)
+#If not using memcache start the monitor thread.
+if not config.memcache:
+    monitor_thread = shoal.ThreadMonitor()
+    monitor_thread.daemon = True
+    monitor_thread.start()
+
+webpy_app = shoal.WebpyServer()
 application = webpy_app.wsgi()
