@@ -269,12 +269,9 @@ class RabbitMQConsumer(Thread):
                     geo_data = utilities.get_geolocation(data['external_ip'])
                 except KeyError as f:
                     logging.error("Could not generate geo location data, discarding...")
-                    self.acknowledge_message(basic_deliver.delivery_tag)
                     return
             shoal_list[key] = data
             shoal_list[key]['geo_data'] = geo_data
             shoal_list[key]['last_active'] = shoal_list[key]['created'] = time()
 
         utilities.set_shoal(shoal_list)
-
-        self.acknowledge_message(basic_deliver.delivery_tag)
