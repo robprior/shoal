@@ -23,7 +23,12 @@ shoal_list = {}
 def get_shoal():
     if config.memcache:
         memc = memcache.Client([config.memcache], debug=1)
-        return memc.get('shoal')
+        data = memc.get('shoal')
+        if data:
+            return data
+        else:
+            memc.set('shoal', {})
+            return {}
     else:
         return shoal_list
 
