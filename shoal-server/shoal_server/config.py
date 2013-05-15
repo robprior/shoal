@@ -70,23 +70,19 @@ def setup(path=None):
         raise
 
     if config_file.has_option("general", "shoal_dir"):
-        shoal_dir = config_file.get("general",
-                                       "shoal_dir")
+        shoal_dir = config_file.get("general", "shoal_dir")
         if not config_file.has_option("general", "geolitecity_path"):
             geolitecity_path = shoal_dir
 
     if config_file.has_option("general", "geolitecity_path"):
-        geolitecity_path = config_file.get("general",
-                                                "geolitecity_path")
+        geolitecity_path = config_file.get("general", "geolitecity_path")
 
     if config_file.has_option("general", "geolitecity_url"):
-        geolitecity_url = config_file.get("general",
-                                                "geolitecity_url")
+        geolitecity_url = config_file.get("general", "geolitecity_url")
 
     if config_file.has_option("general", "geolitecity_update"):
         try:
-            geolitecity_update = config_file.getint("general",
-                                                    "geolitecity_update")
+            geolitecity_update = config_file.getint("general", "geolitecity_update")
         except ValueError:
             print "Configuration file problem: geolitecity_update must be an " \
                   "integer value."
@@ -94,8 +90,7 @@ def setup(path=None):
 
     if config_file.has_option("squid", "squid_cleanse_interval"):
         try:
-            squid_cleanse_interval = config_file.getint("squid",
-                                                        "squid_cleanse_interval")
+            squid_cleanse_interval = config_file.getint("squid", "squid_cleanse_interval")
         except ValueError:
             print "Configuration file problem: squid_cleanse_interval must be an " \
                   "integer value."
@@ -103,43 +98,34 @@ def setup(path=None):
 
     if config_file.has_option("squid", "squid_inactive_time"):
         try:
-            squid_inactive_time = config_file.getint("squid",
-                                                    "squid_inactive_time")
+            squid_inactive_time = config_file.getint("squid", "squid_inactive_time")
         except ValueError:
             print "Configuration file problem: squid_inactive_time must be an " \
                   "integer value."
             sys.exit(1)
 
     if config_file.has_option("rabbitmq", "amqp_server_url"):
-        amqp_server_url = config_file.get("rabbitmq",
-                                                "amqp_server_url")
+        amqp_server_url = config_file.get("rabbitmq", "amqp_server_url")
 
     if config_file.has_option("rabbitmq", "amqp_virtual_host"):
-        amqp_virtual_host = config_file.get("rabbitmq",
-                                                "amqp_virtual_host")
+        amqp_virtual_host = config_file.get("rabbitmq", "amqp_virtual_host")
 
     if config_file.has_option("rabbitmq", "amqp_exchange"):
-        amqp_exchange = config_file.get("rabbitmq",
-                                                "amqp_exchange")
+        amqp_exchange = config_file.get("rabbitmq", "amqp_exchange")
 
     if config_file.has_option("rabbitmq", "amqp_exchange_type"):
-        amqp_exchange_type = config_file.get("rabbitmq",
-                                                "amqp_exchange_type")
+        amqp_exchange_type = config_file.get("rabbitmq", "amqp_exchange_type")
 
     if config_file.has_option("webpy", "webpy_cache"):
         try:
-            webpy_cache = config_file.getboolean("webpy",
-                                             "webpy_cache")
+            webpy_cache = config_file.getboolean("webpy", "webpy_cache")
         except ValueError:
             print "Configuration file problem: webpy_cache must be a " \
                   "boolean value."
             sys.exit(1)
 
     if config_file.has_option("logging", "log_file"):
-        log_file = config_file.get("logging",
-                                        "log_file")
+        log_file = config_file.get("logging", "log_file")
 
     if config_file.has_option("general", "memcache"):
-        memcache = config_file.get("general",
-                                        "memcache")
-
+        memcache = config_file.get("general", "memcache")

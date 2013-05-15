@@ -1,14 +1,14 @@
-import subprocess
-import operator
-import memcache
-import pygeoip
-import logging
-import config
-import json
-import gzip
-import web
-import sys
 import os
+import sys
+import web
+import gzip
+import json
+import config
+import logging
+import pygeoip
+import memcache
+import operator
+import subprocess
 
 from time import time, sleep
 from math import radians, cos, sin, asin, sqrt
@@ -16,6 +16,10 @@ from urllib import urlretrieve
 
 shoal_list = {}
 
+"""
+    Helper functions to get, set and delete the list of tracked Squid servers.
+    Will try and use memcache first if available, then fallback on global shoal_list variable
+"""
 def get_shoal():
     if config.memcache:
         memc = memcache.Client([config.memcache], debug=1)
@@ -49,7 +53,7 @@ def get_geolocation(ip):
         sys.exit(1)
 
 """
-    Given an IP return IP of nearest squid.
+    Given an IP return `count` IP's of nearest Squid servers.
 """
 def get_nearest_squids(ip, count=10):
     request_data = get_geolocation(ip)
@@ -84,6 +88,9 @@ def haversine(lat1,lon1,lat2,lon2):
     c = 2 * asin(sqrt(a))
     return round((r * c),2)
 
+"""
+    Function to generate data for the /nearest URL.
+"""
 def generate_nearest(ip, count):
     try:
         count = int(count)
@@ -101,6 +108,9 @@ def generate_nearest(ip, count):
     else:
         return json.dumps(None)
 
+"""
+    Function to generate data for the /wpad.dat URL.
+"""
 def generate_wpad(ip):
     squids = get_nearest_squids(ip)
     if squids:
@@ -114,6 +124,9 @@ def generate_wpad(ip):
     else:
         return
 
+"""
+    Function to check if geolitecity database needs updating.
+"""
 def check_geolitecity_need_update():
     curr = time()
     geolite_db = os.path.join(config.geolitecity_path,"GeoLiteCity.dat")
@@ -127,6 +140,9 @@ def check_geolitecity_need_update():
     else:
         return True
 
+"""
+    Function to download geolitecity database from URL.
+"""
 def download_geolitecity():
     geolite_db = os.path.join(config.geolitecity_path,"GeoLiteCity.dat")
     geolite_url = config.geolitecity_url

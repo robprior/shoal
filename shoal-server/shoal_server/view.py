@@ -1,12 +1,12 @@
-import config
-import math
-import web
+import os
 import re
+import web
+import math
+import config
+import utilities
 
 from time import time
 from __version__ import version
-import utilities
-import os
 
 t_globals = dict(
   datestr=web.datestr,
@@ -38,6 +38,7 @@ def view_index(size):
 
     shoal_temp = utilities.get_shoal()
     shoal_list = []
+
     # shoal_temp is dictionary, this converts to an array
     for squid in shoal_temp:
         shoal_list.append(shoal_temp[squid])
