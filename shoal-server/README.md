@@ -47,13 +47,13 @@ _**Note**: Shoal config files will be located either at `~/.shoal/` or `/etc/sho
 
 6. Visit `http://localhost:8080`
 
-##Apache and Mod_WSGI and Memcache
+##Apache(Mod_WSGI) and Memcached
 
 1. Use one of the following above methods to install Shoal Server.
  - Make sure the shoal_server package is in the **global** Python packages folder.
 
 2. Adjust settings in `/etc/shoal/shoal_server.conf`
-3. Make sure you have a working Apache installation with mod_wsgi and memcache.
+3. Make sure you have a working Apache installation with mod_wsgi and Memcached.
 4. Move Shoal folder to Apache readable location. `mv /var/shoal/ /var/www/`
  - _Ensure you also change `shoal_dir` in `shoal_server.conf` to point to new directory (`/var/www/shoal/` as per example)_
 
@@ -76,4 +76,3 @@ _**Note**: Shoal config files will be located either at `~/.shoal/` or `/etc/sho
 6. Restart Apache.
 7. Start `monitor.py` script located in `scripts/` folder as a background process.
 7. Visit `http://localhost`
- 
