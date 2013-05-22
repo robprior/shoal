@@ -8,69 +8,68 @@ import os
 import simplejson as json
 import logging
 import time
-
-from shoal_client import config as config
-
 from optparse import OptionParser
 from urllib2 import urlopen
-
-config.setup()
-server = config.shoal_server_url
-cvmfs_config = config.cvmfs_config
-default_http_proxy = config.default_squid_proxy
-default_conf = config.default_config_format
-
-data = None
-dump = False
-closest_http_proxy = ''
-cvmfs_http_proxy = "\nCVMFS_HTTP_PROXY="
+from shoal_client import config
 
 def get_args():
-
-    global server
-    global dump
-
     p = OptionParser()
     p.add_option("-d", "--dump", action="store_true", dest="dump")
     p.add_option("-s", "--server", action="store", type="string", dest="server")
 
-    (options, args) = p.parse_args()
+    return p.parse_args()
+
+def main():
+    config.setup()
+
+    server = config.shoal_server_url
+    cvmfs_config = config.cvmfs_config
+    default_http_proxy = config.default_squid_proxy
+    default_conf = config.default_config_format
+    dump = False
+
+    options, args = get_args()
 
     if options.server:
         server = options.server
     if options.dump:
         dump = True
 
-get_args()
+    data = None
+    closest_http_proxy = ''
+    cvmfs_http_proxy = "\nCVMFS_HTTP_PROXY="
+    
+    if not os.path.exists(cvmfs_config):
+        logging.error("'%s' does not exist, is cvmfs installed? Please check config file." % cvmfs_config)
+        sys.exit(1)
+    
+    try:
+        f = urlopen(server)
+        data = json.loads(f.read())
+    except (urllib2.URLError,ValueError), e:
+        logging.error("Unable to open url. %s" % e)
+    
+    if data:
+        for i in range(0, len(data)):
+            try:
+                closest_http_proxy += 'http://%s:%s;' % (data['%s'%i]['hostname'], data['%s'%i]['squid_port'])
+            except KeyError, e:
+                logging.error("The data returned from '%s' was missing the key: %s. Please ensure the url is running the latest Shoal-Server." % (server, e))
+                sys.exit(1)
+    
+        cvmfs_http_proxy += "\"" + closest_http_proxy + default_http_proxy + "\""
+    
+        default_conf += cvmfs_http_proxy
+    
+        if dump:
+            print "\nThe following would be written to cvmfs config file located at '%s' (defined in shoal_client.conf):\n%s\n" % (cvmfs_config, default_conf)
+        else:
+            f = open(cvmfs_config, "w")
+            f.write(default_conf)
+            f.close()
+    elif dump:
+        print "There was no data returned from the url '%s'\n"\
+              "cvmfs config file located at '%s' (defined in shoal_client.conf) will be untouched" % (server, cvmfs_config)
 
-if not os.path.exists(cvmfs_config):
-    logging.error("'%s' does not exist, is cvmfs installed? Please check config file." % cvmfs_config)
-    sys.exit(1)
-
-try:
-    f = urlopen(server)
-    data = json.loads(f.read())
-except (urllib2.URLError,ValueError), e:
-    logging.error("Unable to open url. %s" % e)
-
-if data:
-    for i in range(0, len(data)):
-        try:
-            closest_http_proxy += 'http://%s:%s;' % (data['%s'%i]['hostname'], data['%s'%i]['squid_port'])
-        except KeyError, e:
-            logging.error("The data returned from '%s' was missing the key: %s. Please ensure the url is running the latest Shoal-Server." % (server, e))
-            sys.exit(1)
-
-    cvmfs_http_proxy += "\"" + closest_http_proxy + default_http_proxy + "\""
-
-    default_conf += cvmfs_http_proxy
-
-    if dump:
-        print "\nThe following would be written to cvmfs config file located at '%s' (defined in shoal_client.conf):\n%s\n" % (cvmfs_config, default_conf)
-    else:
-        f = open(cvmfs_config, "w")
-        f.write(default_conf)
-        f.close()
-elif dump:
-    print "There was no data returned from the url '%s'\n"\
-          "cvmfs config file located at '%s' (defined in shoal_client.conf) will be untouched" % (server, cvmfs_config)
+if __name__ == '__main__':
+    main()
