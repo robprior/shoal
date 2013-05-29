@@ -112,7 +112,6 @@ def setup(path=None):
         host = config_file.get("general", "memcached")
         connection = memcache.Client([host])
         if connection.get_stats():
-            print "TRUEEEEEE"
             memcached = host
         else:
             print "Configuration specified using a Memcached server, but Shoal was unable to connect. " \
