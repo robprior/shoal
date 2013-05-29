@@ -21,8 +21,8 @@ shoal_list = {}
     Will try and use memcache first if available, then fallback on global shoal_list variable
 """
 def get_shoal():
-    if config.memcache:
-        memc = memcache.Client([config.memcache], debug=1)
+    if config.memcached:
+        memc = memcache.Client([config.memcached])
         data = memc.get('shoal')
         if data:
             return data
@@ -33,8 +33,8 @@ def get_shoal():
         return shoal_list
 
 def set_shoal(val):
-    if config.memcache:
-        memc = memcache.Client([config.memcache], debug=1)
+    if config.memcached:
+        memc = memcache.Client([config.memcached])
         memc.set('shoal', val)
     else:
         global shoal_list
@@ -135,10 +135,11 @@ def generate_wpad(ip):
 def check_geolitecity_need_update():
     curr = time()
     geolite_db = os.path.join(config.geolitecity_path,"GeoLiteCity.dat")
-    geolite_update = config.geolitecity_update
+    # check if GeoLiteCity database is older than 30 days.
+    outdated = 30 * 24 * 60 * 60 # 30 days in seconds.
 
     if os.path.exists(geolite_db):
-        if curr - os.path.getmtime(geolite_db) < geolite_update:
+        if curr - os.path.getmtime(geolite_db) < outdated:
             return False
         else:
             return True

@@ -75,4 +75,5 @@ _**Note**: Shoal config files will be located either at `~/.shoal/` or `/etc/sho
 
 6. Restart Apache.
 7. Start `monitor.py` script located in `scripts/` folder as a background process.
-7. Visit `http://localhost`
+8. Visit `http://localhost`
+ - Check Memcached status in footer, if Green everything worked.

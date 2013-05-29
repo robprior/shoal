@@ -1,6 +1,7 @@
 from os.path import join, expanduser, exists
 import sys
 import ConfigParser
+import memcache
 
 # Shoal Options Module
 
@@ -8,16 +9,14 @@ import ConfigParser
 shoal_dir = '/var/shoal/'
 geolitecity_path = shoal_dir
 geolitecity_url = 'http://geolite.maxmind.com/download/geoip/database/GeoLiteCity.dat.gz'
-geolitecity_update = 2592000
 squid_cleanse_interval = 15
 squid_inactive_time = 180
 amqp_server_url = 'amqp://guest:guest@localhost:5672'
 amqp_virtual_host = '/'
 amqp_exchange = 'shoal'
 amqp_exchange_type = 'topic'
-webpy_cache = False
 log_file = '/var/log/shoal_server.log'
-memcache = None
+memcached = None
 
 def setup(path=None):
     """Setup shoal using config file.
@@ -26,16 +25,14 @@ def setup(path=None):
     global shoal_dir
     global geolitecity_path
     global geolitecity_url
-    global geolitecity_update
     global squid_cleanse_interval
     global squid_inactive_time
     global amqp_server_url
     global amqp_virtual_host
     global amqp_exchange
     global amqp_exchange_type
-    global webpy_cache
     global log_file
-    global memcache
+    global memcached
 
     homedir = expanduser('~')
 
@@ -80,14 +77,6 @@ def setup(path=None):
     if config_file.has_option("general", "geolitecity_url"):
         geolitecity_url = config_file.get("general", "geolitecity_url")
 
-    if config_file.has_option("general", "geolitecity_update"):
-        try:
-            geolitecity_update = config_file.getint("general", "geolitecity_update")
-        except ValueError:
-            print "Configuration file problem: geolitecity_update must be an " \
-                  "integer value."
-            sys.exit(1)
-
     if config_file.has_option("squid", "squid_cleanse_interval"):
         try:
             squid_cleanse_interval = config_file.getint("squid", "squid_cleanse_interval")
@@ -116,16 +105,16 @@ def setup(path=None):
     if config_file.has_option("rabbitmq", "amqp_exchange_type"):
         amqp_exchange_type = config_file.get("rabbitmq", "amqp_exchange_type")
 
-    if config_file.has_option("webpy", "webpy_cache"):
-        try:
-            webpy_cache = config_file.getboolean("webpy", "webpy_cache")
-        except ValueError:
-            print "Configuration file problem: webpy_cache must be a " \
-                  "boolean value."
-            sys.exit(1)
-
     if config_file.has_option("logging", "log_file"):
         log_file = config_file.get("logging", "log_file")
 
-    if config_file.has_option("general", "memcache"):
-        memcache = config_file.get("general", "memcache")
+    if config_file.has_option("general", "memcached"):
+        host = config_file.get("general", "memcached")
+        connection = memcache.Client([host])
+        if connection.get_stats():
+            print "TRUEEEEEE"
+            memcached = host
+        else:
+            print "Configuration specified using a Memcached server, but Shoal was unable to connect. " \
+                  "Please check URL of Memcached server in the Shoal Server config file."
+            sys.exit(1)

@@ -16,7 +16,7 @@ t_globals = dict(
   memcache=config.memcache,
 )
 
-render = web.template.render('templates/', cache=config.webpy_cache, globals=t_globals)
+render = web.template.render('templates/', cache=False, globals=t_globals)
 render._keywords['globals']['render'] = render
 
 class index:
