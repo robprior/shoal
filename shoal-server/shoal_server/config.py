@@ -110,10 +110,13 @@ def setup(path=None):
 
     if config_file.has_option("general", "memcached"):
         host = config_file.get("general", "memcached")
-        connection = memcache.Client([host])
-        if connection.get_stats():
-            memcached = host
-        else:
-            print "Configuration specified using a Memcached server, but Shoal was unable to connect. " \
-                  "Please check URL of Memcached server in the Shoal Server config file."
-            sys.exit(1)
+        try:
+            connection = memcache.Client([host])
+            if connection.get_stats():
+                memcached = host
+            else:
+                print "Configuration specified using a Memcached server, but Shoal was unable to connect. " \
+                      "Please check URL of Memcached server in the Shoal Server config file."
+                sys.exit(1)
+        except Exception:
+            pass

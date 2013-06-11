@@ -13,7 +13,7 @@ t_globals = dict(
   version=version,
   squid_active_time=config.squid_inactive_time,
   pid=os.getpid(),
-  memcache=config.memcache,
+  memcached=config.memcached,
 )
 
 render = web.template.render('templates/', cache=False, globals=t_globals)

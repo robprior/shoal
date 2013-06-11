@@ -78,7 +78,7 @@ $def with (page, title='Shoal | Realtime Squid Monitoring System')
             <div>
                 <small class='muted'>Shoal-Server v$version</small> || 
                 <small class='text-warning'>$pid</small> ||
-                $if memcache:
+                $if memcached:
                     <small class='text-success'>Memcached</small>
                 $else:
                     <small class='muted'>Memcached</small>
