@@ -8,7 +8,6 @@ import ConfigParser
 amqp_server_url = 'amqp://guest:guest@localhost:5672'
 amqp_virtual_host = '/'
 amqp_exchange = 'shoal'
-reconnect_retries = 0
 external_ip = None
 interface = None
 interval = 30
