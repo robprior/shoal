@@ -1,4 +1,7 @@
 #!/usr/bin/env python
+"""
+    Script for using web.py development server testing.
+"""
 import os
 import sys
 import logging

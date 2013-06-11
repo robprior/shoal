@@ -1,5 +1,5 @@
 """
-   Use this script if running Shoal Server with Memcached.
+   Use this script if running Shoal Server with Memcached on Apache w/ mod_wsgi.
    This script will start the RabbitMQ and ShoalUpdate Threads which will keep the list of active Squids up-to-date.
    Only 1 instance of this script needs to be running per Shoal Server.
 """

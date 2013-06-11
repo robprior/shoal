@@ -15,6 +15,7 @@ import utilities
 
 """
     Main application that will monitor RabbitMQ and ShoalUpdate threads.
+    Web.py thread is handled separately.
 """
 class ThreadMonitor(Thread):
 
@@ -88,7 +89,8 @@ class ShoalUpdate(Thread):
         self.running = False
 
 """
-    Webpy webserver used to serve up active squid lists and API calls. Can run as either the development server or under mod_wsgi.
+    Webpy webserver used to serve up active squid lists and API calls.
+    Can run as either the development server or under mod_wsgi.
 """
 class WebpyServer(Thread):
 
@@ -116,8 +118,8 @@ class WebpyServer(Thread):
         self.app.stop()
 
 """
-    Basic RabbitMQ async consumer. Consumes messages from a unique queue that is declared when Shoal server first starts.
-    The consumer takes the json in message body, and tracks it in the dictionary `shoal`
+    Basic RabbitMQ async consumer.
+    Consumes messages from a unique queue that is declared when Shoal server first starts.
 """
 class RabbitMQConsumer(Thread):
 

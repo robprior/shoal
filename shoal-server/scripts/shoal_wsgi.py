@@ -1,6 +1,6 @@
 """
    Use this script with Apache mod_wsgi.
-   If memcache url is defined in config you will need to run the monitor.py script as a background process seperate from this script.
+   If Memcached URL is defined in config you will need to run the monitor.py script as a background process seperate from this script.
 """
 import os, sys, logging
 from shoal_server import config, shoal

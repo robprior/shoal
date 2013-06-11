@@ -18,7 +18,7 @@ shoal_list = {}
 
 """
     Helper functions to get, set and delete the list of tracked Squid servers.
-    Will try and use memcache first if available, then fallback on global shoal_list variable
+    Will try and use memcache first if available, then fallback on global shoal_list variable.
 """
 def get_shoal():
     if config.memcached:
