@@ -144,6 +144,7 @@ def check_geolitecity_need_update():
         else:
             return True
     else:
+        print "GeoLiteCity database does not exist."
         return True
 
 """
@@ -153,20 +154,24 @@ def download_geolitecity():
     geolite_db = os.path.join(config.geolitecity_path,"GeoLiteCity.dat")
     geolite_url = config.geolitecity_url
 
+    print "Attempting to download GeoLiteCity database."
+
     try:
         urlretrieve(geolite_url,geolite_db + '.gz')
     except Exception as e:
-        logging.error("Could not download the database. - {0}".format(e))
+        print "Could not download the database. - {0}".format(e)
         sys.exit(1)
     try:
         content = gzip.open(geolite_db + '.gz').read()
     except Exception as e:
-        logging.error("GeoLiteCity.dat file was not properly downloaded. Check contents of {0} for possible errors.".format(geolite_db + '.gz'))
+        print "GeoLiteCity.dat file was not properly downloaded. Check contents of {0} for possible errors.".format(geolite_db + '.gz')
         sys.exit(1)
 
     with open(geolite_db,'w') as f:
         f.write(content)
 
     if check_geolitecity_need_update():
-        logging.error('GeoLiteCity database failed to update.')
+        print 'GeoLiteCity database failed to update.'
         sys.exit(1)
+    else:
+        print "GeoLiteCity database successfully updated."

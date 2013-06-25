@@ -76,12 +76,10 @@ $def with (page, title='Shoal | Realtime Squid Monitoring System')
               &copy; University of Victoria  ||  <a href="http://github.com/hep-gc/shoal">Visit GitHub Project</a><i class="icon-hand-up"></i>
             </div>
             <div>
-                <small class='muted'>Shoal-Server v$version</small> || 
-                <small class='text-warning'>$pid</small> ||
+                <small class='muted'>v$version</small> || 
+                <small class='muted'>PID: $pid</small>
                 $if memcached:
-                    <small class='text-success'>Memcached</small>
-                $else:
-                    <small class='muted'>Memcached</small>
+                    || <small class='text-success'>Memcached</small>
             </div>
           </footer>
         </div>
