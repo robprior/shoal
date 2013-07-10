@@ -22,8 +22,8 @@ With the basic `shoal_agent` initd script you can do the following:
 1. `pip install shoal-agent` or `sudo pip install shoal-agent`
 2. Check settings in either `~/.shoal/shoal_agent.conf` or `/etc/shoal/shoal_agent.conf` and update as needed.
 
-
 **If sudo was used**
+
 1. `chmod +x /etc/init.d/shoal_agent`
  - You may need to adjust the `EXECUTABLEPATH` and `PYTHON` variables in `/etc/init.d/shoal_agent` to point at the proper paths.
 
@@ -38,6 +38,7 @@ With the basic `shoal_agent` initd script you can do the following:
 4. Check settings in either `~/.shoal/shoal_agent.conf` or `/etc/shoal/shoal_agent.conf` and update as needed.
 
 **If sudo was used**
+
 1. `chmod +x /etc/init.d/shoal_agent`
  - You may need to adjust the `EXECUTABLEPATH` and `PYTHON` variables in `/etc/init.d/shoal_agent` to point at the proper paths.
 

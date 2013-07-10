@@ -22,6 +22,7 @@ CVMFS_HTTP_PROXY="[[DYNAMIC SQUID HOSTNAMES APPENDED HERE]];http://chrysaor.west
 2. Check settings in either `~/.shoal/shoal_client.conf` or `/etc/shoal/shoal_client.conf` and update as needed.
 
 **If sudo was used**
+
 1. `chmod +x /etc/init.d/shoal_client`
  - You may need to adjust the `EXECUTABLEPATH` and `PYTHON` variables in `/etc/init.d/shoal_client` to point at the proper paths.
 
@@ -38,6 +39,7 @@ CVMFS_HTTP_PROXY="[[DYNAMIC SQUID HOSTNAMES APPENDED HERE]];http://chrysaor.west
 
 
 **If sudo was used**
+
 1. `chmod +x /etc/init.d/shoal_client`
  - You may need to adjust the `EXECUTABLEPATH` and `PYTHON` variables in `/etc/init.d/shoal_client` to point at the proper paths.
 
