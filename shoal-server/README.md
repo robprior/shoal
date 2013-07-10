@@ -19,33 +19,30 @@ Shoal Server has a basic implementation of the [WPAD](http://en.wikipedia.org/wi
 
 ##Installation
  _**Note**: Requires you have a working RabbitMQ AMQP Server, and Python 2.6+_
-_Recommended to use a system wide install (sudo), but works in a virtualenv with tweaks_
-
-_**Note**: Shoal static files will be located either at `~/shoal_server/` or `/var/shoal/` if sudo was used_
-
-_**Note**: Shoal config files will be located either at `~/.shoal/` or `/etc/shoal/` if sudo was used_
 
 ###Using Pip
 
-1. `pip install shoal-server`
-
-2. Check settings in `shoal_server.conf` update as needed. Make sure RabbitMQ server is running.
-
+1. `pip install shoal-server` or `sudo pip install shoal-server`
+2. Check settings in either `~/.shoal/shoal_server.conf` or `/etc/shoal/shoal_server.conf` and update as needed.
 4. Start `shoal-server`
-  - _First run make take a few seconds to start as it needs to download the GeoLiteCity database (~12MB)._
+  - First run make take a few seconds to start as it needs to download the GeoLiteCity database (~12MB).
 
 5. Visit `http://localhost:8080`
+
+***Note:*** Static files are located at `/var/shoal_server/` or `~/shoal_server/`
 
 ###Using Git
 
 1. `git clone git://github.com/hep-gc/shoal.git`
 2. `cd shoal/shoal-server/`
-3. `python setup.py install`
-4. Check settings in `shoal_server.conf` update as needed. Make sure RabbitMQ server is running.
+3. `python setup.py install` or `sudo python setup.py install`
+4. Check settings in either `~/.shoal/shoal_server.conf` or `/etc/shoal/shoal_server.conf` and update as needed.
 5. Start `shoal-server`
- - _First run make take a few seconds to start as it needs to download the GeoLiteCity database (~12MB)._
+ - First run make take a few seconds to start as it needs to download the GeoLiteCity database (~12MB).
 
 6. Visit `http://localhost:8080`
+
+***Note:*** Static files are located at `/var/shoal_server/` or `~/shoal_server/`
 
 ##Apache(Mod_WSGI) and Memcached
 
@@ -65,15 +62,15 @@ _**Note**: Shoal config files will be located either at `~/.shoal/` or `/etc/sho
 
         Alias /static /var/www/shoal/static/
 
-        AddType text/html .py 
+        AddType text/html .py
 
         <Directory /var/www/shoal/>
             Order deny,allow
-            Allow from all 
+            Allow from all
         </Directory>
  - Some values above may need to be adjusted depending on Linux Distro used.
 
 6. Restart Apache.
-7. Start `monitor.py` script located in `scripts/` folder as a background process.
+7. Start `monitor.py` script located in `/var/shoal_server/scripts/` folder as a background process.
 8. Visit `http://localhost`
  - Check Memcached status in footer, if Green everything worked.
